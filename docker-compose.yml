@@ -1,0 +1,71 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15
+    container_name: postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: zero1-n8n
+      POSTGRES_USER: postgreszero1
+      POSTGRES_PASSWORD: zero1
+      TZ: Asia/Jakarta
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5435:5432"
+
+  n8n:
+    image: docker.n8n.io/n8nio/n8n
+    container_name: n8n
+    restart: unless-stopped
+    environment:
+      DB_TYPE: postgresdb
+      DB_POSTGRESDB_HOST: postgres
+      DB_POSTGRESDB_PORT: 5432
+      DB_POSTGRESDB_DATABASE: zero1-n8n
+      DB_POSTGRESDB_USER: postgreszero1
+      DB_POSTGRESDB_PASSWORD: zero1
+      DB_POSTGRESDB_SCHEMA: public
+
+      # Basic Auth untuk keamanan akses UI
+      N8N_BASIC_AUTH_ACTIVE: true
+      N8N_BASIC_AUTH_USER: oadhim
+      N8N_BASIC_AUTH_PASSWORD: M4rtab4K
+
+      # Enkripsi dan rekomendasi modern
+      N8N_ENCRYPTION_KEY: u4XB2vy91z0qkFJhMNdp7LaZxYReGcmU
+      N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS: true
+      N8N_RUNNERS_ENABLED: true
+
+      # Konfigurasi Umum
+      TZ: Asia/Jakarta
+      N8N_HOST: n8n.local
+      WEBHOOK_URL: http://localhost:5678
+
+    ports:
+      - "5678:5678"
+    volumes:
+      - n8n_data:/home/node/.n8n
+    depends_on:
+      - postgres
+
+  waha:
+    image: devlikeapro/waha:latest
+    container_name: waha
+    restart: unless-stopped
+    environment:
+      WAHA_WEBHOOK_URL: http://n8n:5678/webhook
+      WAHA_API_TOKEN: GkR72FzY4NxVchKqWj0uZPmsQXoaEgH9BtYvLcfi
+      TZ: Asia/Jakarta
+    ports:
+      - "3000:3000"
+    volumes:
+      - waha_data:/app/data
+    depends_on:
+      - n8n
+
+volumes:
+  postgres_data:
+  n8n_data:
+  waha_data:
